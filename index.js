@@ -45,5 +45,5 @@ function encode(input){
 }
 
 function decode(input){
-	return decode1(input.replace(/H/g, "3").replace(/h/g, "2").replace(/A/g, "1").replace(/a/g, "0"));
+	return decode1(input.trim().replace(/[^aAhH]+/g).replace(/H/g, "3").replace(/h/g, "2").replace(/A/g, "1").replace(/a/g, "0"));
 }
