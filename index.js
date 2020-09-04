@@ -18,14 +18,14 @@ module.exports = class Scream extends Plugin {
 	
 	powercord.api.commands.registerCommand({
       command: 'descream',
-      description: 'Decode a scream',
+      description: 'Decode a scream and send it',
       usage: '{c} <message>',
-      executor: (args) => ({send: false, result: decode(args.join(" "))})
+      executor: (args) => ({send: true, result: decode(args.join(" "))})
     });
 	  
 	  powercord.api.commands.registerCommand({
       command: 'silentdescream',
-      description: 'Silently decode a scream',
+      description: 'Decode a scream without sending it',
       usage: '{c} <message>',
       executor: (args) => ({send: false, result: decode(args.join(" "))})
     });
