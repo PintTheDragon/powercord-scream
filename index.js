@@ -1,10 +1,14 @@
 const { Plugin } = require('powercord/entities');
 const { getModule } = require("powercord/webpack");
 const { inject, uninject } = require("powercord/injector");
+const { messages } = require('powercord/webpack');
+const { receiveMessage } = messages;
 const dispatcher = getModule(["dirtyDispatch"], false);
 
 module.exports = class Scream extends Plugin {
   async startPlugin () {
+	  const { createBotMessage } = await getModule(['createBotMessage']);
+	  
 	  powercord.api.commands.registerCommand({
       command: 'scream',
       description: 'Scream your message',
@@ -16,7 +20,7 @@ module.exports = class Scream extends Plugin {
       command: 'descream',
       description: 'Decode a scream',
       usage: '{c} <message>',
-      executor: (args) => ({send: true, result: decode(args.join(" "))})
+      executor: (args) => ({send: false, result: decode(args.join(" "))})
     });
 	  
 	  powercord.api.commands.registerCommand({
@@ -26,11 +30,36 @@ module.exports = class Scream extends Plugin {
       executor: (args) => ({send: false, result: decode(args.join(" "))})
     });
     
-    inject("scream-decode", dispatcher, "dispatch", (args) => {
-		//needs to be done
-		
+    let msgs = [];
+	
+	inject("scream-decode", dispatcher, "dispatch", (args) => {
+		if(args[0].type === "MESSAGE_CREATE" && !args[0].optimistic){
+			if(!msgs.includes(args[0].message.id)){
+				msgs.push(args[0].message.id);
+				setTimeout(() => {
+					const index = msgs.indexOf(args[0].message.id);
+					if (index > -1) {
+						msgs.splice(index, 1);
+					}
+				}, 3000);
+				let msg = args[0].message.content;
+				if(msg.startsWith("hhAH")){
+					msg = decode(msg);
+					const receivedMessage = createBotMessage(args[0].message.channel_id, {});
+					receivedMessage.content = msg;
+					receiveMessage(receivedMessage.channel_id, receivedMessage);
+				}
+			}
+		}
 		return args;
 	});
+  }
+		
+	
+	
+  
+  pluginWillUnload () {
+    uninject("scream-decode");
   }
 }
 
