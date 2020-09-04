@@ -1,4 +1,7 @@
 const { Plugin } = require('powercord/entities');
+const { getModule } = require("powercord/webpack");
+const { inject, uninject } = require("powercord/injector");
+const dispatcher = getModule(["dirtyDispatch"], false);
 
 module.exports = class Scream extends Plugin {
   async startPlugin () {
@@ -22,8 +25,13 @@ module.exports = class Scream extends Plugin {
       usage: '{c} <message>',
       executor: (args) => ({send: false, result: decode(args.join(" "))})
     });
+    
+    inject("scream-decode", dispatcher, "dispatch", (args) => {
+		//needs to be done
+		
+		return args;
+	});
   }
-  
 }
 
 function encode1(input) {
@@ -48,9 +56,11 @@ function decode1(input){
 }
 
 function encode(input){
-	return encode1(input).replace(/3/g, "H").replace(/2/g, "h").replace(/1/g, "A").replace(/0/g, "a");
+	return encode1("§"+input).replace(/3/g, "H").replace(/2/g, "h").replace(/1/g, "A").replace(/0/g, "a");
 }
 
 function decode(input){
-	return decode1(input.trim().replace(/[^aAhH]+/g).replace(/H/g, "3").replace(/h/g, "2").replace(/A/g, "1").replace(/a/g, "0"));
+	
+	return decode1(input.trim().replace(/[^aAhH]+/g).replace(/H/g, "3").replace(/h/g, "2").replace(/A/g, "1").replace(/a/g, "0")).substr(1);
 }
+
