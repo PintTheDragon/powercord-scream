@@ -22,8 +22,15 @@ module.exports = class Scream extends Plugin {
       usage: '{c} <message>',
       executor: (args) => ({send: false, result: decode(args.join(" "))})
     });
-	
-	let msgs = [];
+	  
+	  powercord.api.commands.registerCommand({
+      command: 'silentdescream',
+      description: 'Silently decode a scream',
+      usage: '{c} <message>',
+      executor: (args) => ({send: false, result: decode(args.join(" "))})
+    });
+    
+    let msgs = [];
 	
 	inject("scream-decode", dispatcher, "dispatch", (args) => {
 		if(args[0].type === "MESSAGE_CREATE" && !args[0].optimistic){
@@ -47,6 +54,9 @@ module.exports = class Scream extends Plugin {
 		return args;
 	});
   }
+		
+	
+	
   
   pluginWillUnload () {
     uninject("scream-decode");
@@ -79,5 +89,7 @@ function encode(input){
 }
 
 function decode(input){
+	
 	return decode1(input.trim().replace(/[^aAhH]+/g).replace(/H/g, "3").replace(/h/g, "2").replace(/A/g, "1").replace(/a/g, "0")).substr(1);
 }
+
