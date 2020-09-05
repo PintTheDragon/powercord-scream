@@ -43,7 +43,7 @@ module.exports = class Scream extends Plugin {
                         }
                     }, 3000);
                     let msg = args[0].message.content;
-                    if(msg.startsWith("hhAH")){
+                    if(decrypt(msg, msg.length).startsWith("hhAH")){
                         msg = decode(msg);
                         const receivedMessage = createBotMessage(args[0].message.channel_id, {});
                         receivedMessage.content = msg;
@@ -82,11 +82,59 @@ function decode1(input){
 }
 
 function encode(input){
-    return encode1("§"+input).replace(/3/g, "H").replace(/2/g, "h").replace(/1/g, "A").replace(/0/g, "a");
+    let res1 = encode1("§"+input).replace(/3/g, "H").replace(/2/g, "h").replace(/1/g, "A").replace(/0/g, "a");
+    return encrypt(res1, res1.length);
 }
 
 function decode(input){
-
-    return decode1(input.trim().replace(/[^aAhH]+/g).replace(/H/g, "3").replace(/h/g, "2").replace(/A/g, "1").replace(/a/g, "0")).substr(1);
+    let fixed = input.trim().replace(/[^aAhH]+/g);
+    fixed = decrypt(fixed, fixed.length);
+    return decode1(fixed.replace(/H/g, "3").replace(/h/g, "2").replace(/A/g, "1").replace(/a/g, "0")).substr(1);
 }
 
+function encrypt(input, key){
+    let key1 = key % 2147483647;
+    let arr = input.split("");
+
+    for (let i = 0; i < 100; i++) {
+        key1 = (key1 * 16807) % 2147483647;
+        let tmpKey = key1;
+        key1 = (key1 * 16807) % 2147483647;
+
+        let tmp1 = arr[tmpKey % arr.length];
+
+        arr[tmpKey % arr.length] = arr[key1 % arr.length];
+        arr[key1 % arr.length] = tmp1;
+    }
+        key1++;
+    return arr.join("");
+}
+
+function decrypt(input, key){
+    let key1 = key % 2147483647;
+    let keys = [];
+    let arr = input.split("");
+
+    for(let i = 0; i < 100; i++){
+        let tmpArr = [];
+
+        key1 = (key1 * 16807) % 2147483647;
+        tmpArr.push(key1 % arr.length);
+
+        key1 = (key1 * 16807) % 2147483647;
+        tmpArr.push(key1 % arr.length);
+
+        keys.push(tmpArr);
+    }
+
+    keys = keys.reverse();
+
+    keys.forEach((keyArr) => {
+        let tmp1 = arr[keyArr[0]];
+
+        arr[keyArr[0]] = arr[keyArr[1]];
+        arr[keyArr[1]] = tmp1;
+    });
+
+    return arr.join("");
+}
